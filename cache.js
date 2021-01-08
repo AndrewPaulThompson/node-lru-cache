@@ -1,47 +1,49 @@
-const Item = require('./CacheItem')
+const Item = require('./cache-item')
 
-const data = {}
-const limit = 5
-data['newest'] = new Item('newest', 0)
-data['oldest'] = new Item('oldest', 0)
-let newest = data['newest']
-let oldest = data['oldest']
-newest.prev = oldest
-oldest.next = newest
+class cache {
+    constructor(limit) {
+        this.data = {}
+        this.limit = limit
+        this.newest = null
+        this.oldest = null
+        this.setup()
+    }
 
-const insert = (item) => {
-    data[newest.key].next = item
-    data[item.key].prev = newest
-    newest = item
+    /**
+     * Setup the newest & oldest data nodes
+     */
+    setup = () => {
+        // Create an Item for the newest & oldest
+        this.data['newest'] = new Item('newest', 0)
+        this.data['oldest'] = new Item('oldest', 0)
 
-    if (Object.keys(data).length > limit) {
-        const key = oldest.key
-        oldest = oldest.next
-        delete data[key]
+        // Set them as properties on the class
+        this.newest = this.data['newest']
+        this.oldest = this.data['oldest']
+
+        // Create a reference between them
+        this.newest.prev = this.oldest
+        this.oldest.next = this.newest
+    }
+
+    /**
+     * Gets an item by it's key, returns null if no item for the key is found
+     * @param {string} key Cache key
+     */
+    get = (key) => {
+        if (key in this.data) {
+            return this.data[key].value
+        }
+    
+        return null
+    }
+
+    /**
+     * Gets all of the current items stored
+     */
+    getAll = () => {
+        return this.data
     }
 }
 
-const set = (key, value) => {
-    if (key in data) {
-        data[key].prev.next = data[key].next
-        data[key].next.prev = data[key].prev
-        delete data[key]
-    }
-
-    data[key] = new Item(key, value)
-    insert(data[key])
-}
-
-const get = (key) => {
-    if (key in data) {
-        return data[key].value
-    }
-
-    return null
-}
-
-const getAll = () => {
-    return data
-}
-
-module.exports = { set, get, getAll }
+module.exports = cache
