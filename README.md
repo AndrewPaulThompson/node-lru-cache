@@ -5,10 +5,21 @@
 ### LRU
 ```
 const lru = require('./lru')
-const cache = new lru(3)
+const lruCache = new lru(3)
 
-cache.set('key', 'value')
-const cached = cache.get('key')
+lruCache.set('key', 'value')
+const item = lruCache.get('key')
 
-console.log(cached)
+console.log(item)
+```
+
+### Random Replacement
+```
+const rr = require('./rr')
+const rrCache = new rr(4)
+
+rrCache.set('key', 'value')
+const item = rrCache.get('key')
+
+console.log(item)
 ```

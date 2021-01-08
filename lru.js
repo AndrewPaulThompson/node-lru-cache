@@ -1,9 +1,12 @@
-const Item = require('./cache-item')
+const item = require('./cache-item')
+const cache = require('./cache')
 
-class lru {
+/**
+ * Least Recently Used cache
+ */
+class lru extends cache {
     constructor(limit = 5) {
-        this.data = {}
-        this.limit = limit
+        super(limit)
         this.newest = null
         this.oldest = null
         this.setup()
@@ -14,8 +17,8 @@ class lru {
      */
     setup = () => {
         // Create an Item for the newest & oldest
-        this.data['newest'] = new Item('newest', 0)
-        this.data['oldest'] = new Item('oldest', 0)
+        this.data['newest'] = new item('newest', 0)
+        this.data['oldest'] = new item('oldest', 0)
 
         // Set them as properties on the class
         this.newest = this.data['newest']
@@ -70,29 +73,10 @@ class lru {
         }
 
         // Create an Item
-        this.data[key] = new Item(key, value)
+        this.data[key] = new item(key, value)
 
         // and insert it
         this.insert(this.data[key])
-    }
-
-    /**
-     * Gets an item by it's key, returns null if no item for the key is found
-     * @param {string} key Cache key
-     */
-    get = (key) => {
-        if (key in this.data) {
-            return this.data[key].value
-        }
-    
-        return null
-    }
-
-    /**
-     * Gets all of the current items stored
-     */
-    getAll = () => {
-        return this.data
     }
 }
 
