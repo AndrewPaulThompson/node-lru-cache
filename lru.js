@@ -9,6 +9,7 @@ class lru extends cache {
         super(limit)
         this.newest = null
         this.oldest = null
+        this.data = []
         this.setup()
     }
 
@@ -64,12 +65,8 @@ class lru extends cache {
     set = (key, value) => {
         // If the current key already exists
         if (key in this.data) {
-            // Set point the previous & next items to each other
-            this.data[key].prev.next = this.data[key].next
-            this.data[key].next.prev = this.data[key].prev
-
-            // Then delete the item, so we can replace it (forcing it to be the newest item)
-            delete this.data[key]
+            // Remove it from the data list
+            this.removeKey(key)
         }
 
         // Create an Item
@@ -77,6 +74,49 @@ class lru extends cache {
 
         // and insert it
         this.insert(this.data[key])
+    }
+
+    removeKey = (key) => {
+        // We're removing the last (oldest key)
+        if (typeof this.data[key].prev == "undefined" || this.oldest.key == key) {
+            this.oldest = this.data[key].next
+            this.data[key].next.prev = null
+        } else {
+            this.data[key].next.prev = this.data[key].prev
+        }
+
+        // We're removing the first (newest key)
+        if (typeof this.data[key].next == "undefined" || this.newest.key == key) {
+            this.newest = this.data[key].prev
+            this.data[key].prev.next = null
+        } else {
+            this.data[key].prev.next = this.data[key].next
+        }
+
+        // Then delete the item
+        delete this.data[key]
+    }
+
+    get = (key) => {
+        if (key in this.data === false) {
+            return null
+        }
+
+        const value = this.data[key].value
+
+        // If this is already the newest key, just return the value
+        if (this.newest.key == key) return value
+
+        // Because we're using this key, move it to the front to keep it "fresh"
+        // Start by removing it from its current position
+        this.removeKey(key)
+
+        // Create a new Item and insert it
+        this.data[key] = new item(key, value)
+        this.insert(this.data[key])
+
+        // Then return the value
+        return value
     }
 }
 
